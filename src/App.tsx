@@ -8,7 +8,7 @@ function App() {
   const [markers, setMarkers] = useState([])
 
   return (
-    <APIProvider apiKey={process.env.REACT_APP_GOOGLE_API_KEY}>
+    <APIProvider apiKey={process.env.REACT_APP_GOOGLE_API_KEY || ''}>
       {markers.length}
       <div style={{ height: "100vh", width: "100vw" }}>
         <AutoComplete setMarkers={setMarkers} />
