@@ -1,24 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+import { APIProvider } from '@vis.gl/react-google-maps';
+import MapComponent from './components/MapComponent';
+import AutoComplete from './components/Autocomplete';
+import { useState } from "react";
 
 function App() {
+  const position = { lat: 53.54992, lng: 10.00678 };
+  const [markers, setMarkers] = useState([])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <APIProvider apiKey={process.env.REACT_APP_GOOGLE_API_KEY}>
+      {markers.length}
+      <div style={{ height: "100vh", width: "100vw" }}>
+        <AutoComplete setMarkers={setMarkers} />
+        <MapComponent markers={markers} />
+      </div>
+    </APIProvider>
   );
 }
 
