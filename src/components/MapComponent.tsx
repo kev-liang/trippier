@@ -3,8 +3,13 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { useEffect, useState } from "react";
 import type { MarkerGroup } from "../store/markerGroupSlice";
+
 const MapComponent = (props: any) => {
-  const [markers, setMarkers] = useState([]);
+  // todo marker type
+  const markers: any = useSelector((state: RootState) =>
+    state.markerGroup.groups.flatMap(({ markers }) => markers)
+  );
+  console.log("MARKERS MAP", markers);
   const groups: MarkerGroup[] = useSelector(
     (state: RootState) => state.markerGroup.groups
   );
@@ -19,7 +24,7 @@ const MapComponent = (props: any) => {
 
   return (
     <Map mapId={"test"} defaultCenter={position} defaultZoom={10}>
-      <AdvancedMarker
+      {/* <AdvancedMarker
         position={position}
         title={"AdvancedMarker with customized pin."}
       >
@@ -28,9 +33,9 @@ const MapComponent = (props: any) => {
           borderColor={"#1e89a1"}
           glyphColor={"#0f677a"}
         ></Pin>
-      </AdvancedMarker>
+      </AdvancedMarker> */}
       {markers.map((marker: any) => {
-        return <AdvancedMarker position={marker} />;
+        return <AdvancedMarker position={marker.geometry.location} />;
       })}
     </Map>
   );

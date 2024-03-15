@@ -16,9 +16,11 @@ export interface MarkerGroup {
 interface MarkerSlice {
   groups: MarkerGroup[];
   selectedPlace: google.maps.places.PlaceResult | null;
+  selectedGroup: number;
 }
 
 const initialState: MarkerSlice = {
+  // initial "All" group id start 0
   groups: [
     {
       id: 0,
@@ -29,6 +31,7 @@ const initialState: MarkerSlice = {
     },
   ],
   selectedPlace: null,
+  selectedGroup: -1,
 };
 
 const findGroup = (
@@ -45,23 +48,27 @@ const markerGroupSlice = createSlice({
     setSelectedPlace: (state, action: PayloadAction<any>) => {
       state.selectedPlace = action.payload;
     },
-    addSelectedMarker: (state, action: PayloadAction<any>) => {
-      const groupId = action.payload;
+    setSelectedGroup: (state, action: PayloadAction<any>) => {
+      state.selectedGroup = action.payload;
+    },
+    addSelectedMarker: (state) => {
       const marker = state.selectedPlace;
       if (!marker) return;
-      const foundGroup = findGroup(state.groups, groupId);
       const allGroup = findGroup(state.groups, 0);
-      if (!foundGroup || !allGroup) return;
-      foundGroup.markers.push(marker);
+      if (!allGroup) return;
       allGroup.markers.push(marker);
+      if (state.selectedGroup < 0) return;
+      const foundGroup = findGroup(state.groups, state.selectedGroup);
+      if (!foundGroup) return;
+      foundGroup.markers.push(marker);
     },
     addGroup: (state) => {
-      const newGroup: MarkerGroup= {
+      const newGroup: MarkerGroup = {
         id: state.groups.length,
-        name: `Group ${state.groups.length + 1}`,
+        name: `Group ${state.groups.length}`,
         markers: [],
         styles: {},
-        titleInputProps: {readOnly: false}
+        titleInputProps: { readOnly: false },
       };
       state.groups.unshift(newGroup);
     },
@@ -79,5 +86,6 @@ export const {
   addGroup,
   setSelectedPlace,
   changeGroupName,
+  setSelectedGroup,
 } = markerGroupSlice.actions;
 export default markerGroupSlice.reducer;

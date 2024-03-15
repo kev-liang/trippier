@@ -1,26 +1,23 @@
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../store/store";
 import type { MarkerGroup } from "../store/markerGroupSlice";
-import {
-  addGroup,
-  changeGroupName,
-  addSelectedMarker,
-} from "../store/markerGroupSlice";
-import AutoComplete from "./Autocomplete";
+import { addGroup, changeGroupName } from "../store/markerGroupSlice";
 import MarkerGroupRow from "./MarkerGroupRow";
 
 import { TextField } from "@mui/material";
-  import Accordion from "@mui/material/Accordion";
+import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useState } from "react";
+import MarkerInputSection from "./MarkerInputSection";
+import { HexColorPicker } from "react-colorful";
 
 const MarkerGroupComponent = (props: any) => {
   const groups = useSelector((state: RootState) => state.markerGroup.groups);
   const dispatch = useDispatch();
-  const [showAddToGroup, setShowAddToGroup] = useState(false);
-
+  const [colorVal, setColorVal] = useState<string>();
+  
   const handleAddGroup = () => {
     dispatch(addGroup());
   };
@@ -35,10 +32,9 @@ const MarkerGroupComponent = (props: any) => {
     dispatch(changeGroupName(action));
   };
 
-  const handleAddLocation = () => {
-    console.log("ADDING");
-    dispatch(addSelectedMarker(0));
-  };
+  const handleColorChange = (color: string) => {
+    setColorVal(color)
+  }
 
   return (
     <div>
@@ -62,13 +58,14 @@ const MarkerGroupComponent = (props: any) => {
               {group.markers.map((marker: any) => {
                 return <MarkerGroupRow marker={marker} />;
               })}
+              <HexColorPicker color={colorVal} onChange={setColorVal}/>
+              {colorVal}
             </AccordionDetails>
           </Accordion>
         );
       })}
       <div onClick={handleAddGroup}> ADD GROUP</div>
-      <AutoComplete />
-      <div onClick={handleAddLocation}> ADD LOCATION </div>
+      <MarkerInputSection />
     </div>
   );
 };
