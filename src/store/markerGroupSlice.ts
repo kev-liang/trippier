@@ -1,44 +1,50 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-// import { store } from "../store/store"
+import { RgbColor } from "react-colorful";
+import { Constants } from "../utils/constants";
+import { findGroup } from "../domain/groups";
 
 interface GroupTitleInputProps {
   readOnly: boolean;
 }
 
+export interface Marker extends google.maps.places.PlaceResult {
+  groupId: number;
+}
 export interface MarkerGroup {
-  markers: google.maps.places.PlaceResult[];
+  markers: Marker[];
   styles: any;
   name: string;
   id: number;
   titleInputProps: GroupTitleInputProps;
+  color: RgbColor;
+  secondaryColor: RgbColor;
 }
 
-interface MarkerSlice {
+export interface MarkerSlice {
   groups: MarkerGroup[];
+  allGroup: MarkerGroup;
   selectedPlace: google.maps.places.PlaceResult | null;
   selectedGroup: number;
 }
 
-const initialState: MarkerSlice = {
-  // initial "All" group id start 0
-  groups: [
-    {
-      id: 0,
-      name: "All",
-      styles: {},
-      markers: [],
-      titleInputProps: { readOnly: true },
-    },
-  ],
-  selectedPlace: null,
-  selectedGroup: -1,
+const getEmptyGroup = () => {
+  return {
+    id: Constants.DEFAULT_MARKER_GROUP_ID,
+    name: "All",
+    styles: {},
+    markers: [],
+    titleInputProps: { readOnly: true },
+    color: { r: 0, g: 0, b: 0 },
+    secondaryColor: { r: 255, g: 255, b: 255 },
+  };
 };
 
-const findGroup = (
-  groups: MarkerGroup[],
-  groupId: number
-): MarkerGroup | undefined => {
-  return groups.find((group) => group.id === groupId);
+const initialState: MarkerSlice = {
+  // initial "All" group id start 0
+  groups: [],
+  allGroup: getEmptyGroup(),
+  selectedPlace: null,
+  selectedGroup: -1,
 };
 
 const markerGroupSlice = createSlice({
@@ -51,25 +57,27 @@ const markerGroupSlice = createSlice({
     setSelectedGroup: (state, action: PayloadAction<any>) => {
       state.selectedGroup = action.payload;
     },
+    setGroupColor: (state, action: PayloadAction<any>) => {
+      const { groupId, color, secondaryColor } = action.payload;
+      const foundGroup = findGroup(state.groups, groupId);
+      if (!foundGroup) return;
+      foundGroup.color = color;
+      foundGroup.secondaryColor = secondaryColor;
+    },
     addSelectedMarker: (state) => {
-      const marker = state.selectedPlace;
-      if (!marker) return;
-      const allGroup = findGroup(state.groups, 0);
-      if (!allGroup) return;
-      allGroup.markers.push(marker);
-      if (state.selectedGroup < 0) return;
+      const { selectedPlace } = state
+      if (!selectedPlace) return;
+      const marker = {...selectedPlace, groupId: state.selectedGroup } 
+      state.allGroup.markers.push(marker);
       const foundGroup = findGroup(state.groups, state.selectedGroup);
       if (!foundGroup) return;
       foundGroup.markers.push(marker);
     },
     addGroup: (state) => {
-      const newGroup: MarkerGroup = {
-        id: state.groups.length,
-        name: `Group ${state.groups.length}`,
-        markers: [],
-        styles: {},
-        titleInputProps: { readOnly: false },
-      };
+      const newGroup: MarkerGroup = getEmptyGroup();
+      newGroup.id = state.groups.length;
+      newGroup.name = `Group ${state.groups.length + 1}`;
+      newGroup.titleInputProps = { readOnly: false };
       state.groups.unshift(newGroup);
     },
     changeGroupName: (state, action) => {
@@ -87,5 +95,6 @@ export const {
   setSelectedPlace,
   changeGroupName,
   setSelectedGroup,
+  setGroupColor,
 } = markerGroupSlice.actions;
 export default markerGroupSlice.reducer;
